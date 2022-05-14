@@ -3,13 +3,14 @@
 
 struct Activation
 {
-	virtual float* operator()(float* z) = 0;
-	virtual float* backprop(float * z) = 0;
+	virtual void operator()(float* z) = 0;
+	virtual void backprop(float * z) = 0;
 };
 
-struct ReLU
+struct ReLU : Activation
 {
-
+	void operator()(float* z);
+	void backprop(float* z);
 };
 
 

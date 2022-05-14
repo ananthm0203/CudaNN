@@ -27,10 +27,10 @@
     <ClInclude Include="activations.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="activations_kernel.cuh">
+    <ClInclude Include="cuda_utils.cuh">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="cuda_utils.cuh">
+    <ClInclude Include="activation_kernels.cuh">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -44,9 +44,6 @@
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="kernel_nn.cu">
-      <Filter>Source Files</Filter>
-    </CudaCompile>
-    <CudaCompile Include="activations_kernel.cu">
       <Filter>Source Files</Filter>
     </CudaCompile>
   </ItemGroup>

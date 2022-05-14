@@ -144,6 +144,7 @@
     <ClInclude Include="activations.h" />
     <ClInclude Include="dense.h" />
     <ClInclude Include="cuda_utils.cuh" />
+    <ClInclude Include="activation_kernels.cuh" />
     <ClInclude Include="kernel_nn.cuh" />
     <ClInclude Include="layer.h" />
   </ItemGroup>
@@ -152,7 +153,6 @@
     <ClCompile Include="layer.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <CudaCompile Include="activations_kernel.cu" />
     <CudaCompile Include="kernel_nn.cu" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

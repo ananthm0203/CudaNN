@@ -219,10 +219,13 @@ void matMulAdd(float* X, float* W, float* B, float* R, uint32_t M, uint32_t N, u
 		// Allocate memory on the device
 		float* B_d;
 		checkCuda(cudaMalloc(&B_d, B_memsize));
+
 		// Copy from the host to the device
 		checkCuda(cudaMemcpy(B_d, B, B_memsize, cudaMemcpyHostToDevice));
+
 		// Perform R (mat.) + Bias (vect.)
 		vectMatAddKernel << <blocksPerGrid, threadsPerBlock >> > (B, R, L, N);
+
 		// Free memory on the device
 		checkCuda(cudaFree(B_d));
 	}
