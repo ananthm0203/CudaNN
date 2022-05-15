@@ -2,6 +2,7 @@
 #include <cuda_runtime.h>
 #include <device_functions.h>
 #include "device_launch_parameters.h"
+#include "activations.h"
 
 __global__ void matMulKernel(float* A, float* B, float* C, uint32_t M, uint32_t N, uint32_t L)
 {
@@ -187,9 +188,10 @@ void transpose(float* A, float* T, uint32_t M, uint32_t N)
 	checkCuda(cudaFree(T_d));
 }
 
-void matMulAdd(float* X, float* W, float* B, float* R, uint32_t M, uint32_t N, uint32_t L, bool use_bias)
+template<bool use_bias, Activation *activation>
+void matMulAdd(float* X, float* W, float* B, float* R, uint32_t M, uint32_t N, uint32_t L)
 {
-	dim3 blocksPerGrid((L - 1) / TILE_WIDTH + 1, (M - 1) / TILE_WIDTH + 1);
+	dim3 blocksPerGrid((L - 1) / TILE_WIDTH + 1, (N - 1) / TILE_WIDTH + 1);
 	dim3 threadsPerBlock(TILE_WIDTH, TILE_WIDTH);
 	uint32_t X_memsize = M * N * sizeof(float);
 	uint32_t W_memsize = L * M * sizeof(float);

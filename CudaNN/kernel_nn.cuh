@@ -1,7 +1,5 @@
 #ifndef KERNEL_CUH
 #define KERNEL_CUH
-#define TILE_WIDTH 32
-#define BLOCK_SIZE 8
 
 #include <stdint.h>
 #include "cuda_utils.cuh"
