@@ -66,19 +66,19 @@ void denseForward(float* X, float* W, float* B, float* R, uint32_t M, uint32_t N
 	checkCuda(cudaFree(R_d));
 }
 
-template<bool use_bias, typename Activation>
+template<bool use_bias, bool use_activation, typename Activation>
 void denseBackprop(float* grad, float* new_grad, float* z, float* X, float* W, float* B, float* W_grad, float* B_grad, size_t L, size_t M, size_t N)
 {
 	auto grad_memsize = L * N * sizeof(float);
 	float* grad_d;
-	if (activation)
+	if (use_activation)
 	{
 		if (T.in_place_grad())
 		{
 			(T.forward())
 		}
 		
-		if (Activation.in_place_grad())
+		if (Activation::in_place_grad())
 		{
 			float* z_d;
 			checkCuda(cudaMalloc(&z_d, grad_memsize));
@@ -96,16 +96,29 @@ void denseBackprop(float* grad, float* new_grad, float* z, float* X, float* W, f
 		}
 		else
 		{
-
+			float* z_d;
+			float* grad_z_d;
+			auto grad_z_memsize = L * L * sizeof(float);
+			checkCuda(cudaMalloc(&z_d, grad_memsize));
+			checkCuda(cudaMemcpy(z_d, z, grad_memsize, cudaMemcpyHostToDevice));
+			checkCuda(cudaMalloc(&grad_z_d, grad_z_memsize));	
+			Activation.backprop(z_d, grad_z_d, L, N);
+			checkCuda(cudaFree(z_d));
+			checkCuda(cudaMalloc(&z_d, grad_memsize));
+			checkCuda(cudaMemcpy(z_d, z, grad_memsize, cudaMemcpyHostToDevice));
+			checkCuda(cudaMalloc(&grad_d, grad_memsize));
+			checkCuda(cudaMemcpy(grad_d, grad, grad_memsize, cudaMemcpyHostToDevice));
+			dim3 blocksPerGrid((L - 1) / TILE_WIDTH + 1, (N - 1) / TILE_WIDTH + 1);
+			dim3 threadsPerBlock(TILE_WIDTH, TILE_WIDTH);
+			matMulKernel << <blocksPerGrid, threadsPerBlock >> > (grad_z_d, grad_d, grad_d, L, L, N);
+			checkCuda(cudaFree(grad_z_d));
 		}
-		checkCuda(cudaMalloc(&z_grad_d, grad_memsize));
 	}
 	else
 	{
 		checkCuda(cudaMalloc(&grad_d, grad_memsize));
 		// Copy memory from host to device
 		checkCuda(cudaMemcpy(grad_d, grad, grad_memsize, cudaMemcpyHostToDevice));
-		
 	}
 
 	//// Calculate new_grad ////
