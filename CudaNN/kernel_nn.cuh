@@ -5,8 +5,10 @@
 #include "cuda_utils.cuh"
 #include "activations.h"
 
-
-__global__ void hadamardKernel(float* A, float* B, uint32_t M, uint32_t N)
+// Using template specialization and operator overloading for elemwiseOpKernel
+// We should probably enforce type checks here, but it might be best to enforce them higher up
+template<typename Op, typename T>
+__global__ void elemwiseOpKernel(T* A, T* dst, uint32_t M, uint32_t N)
 {
 	auto tx = threadIdx.x;
 	auto ty = threadIdx.y;
@@ -18,9 +20,73 @@ __global__ void hadamardKernel(float* A, float* B, uint32_t M, uint32_t N)
 
 	if (ROW < M && COL < N)
 	{
-		B[ROW * N + COL] *= A[ROW * N + COL];
+		dst[ROW * N + COL] = Op(A[ROW * N + COL]);
 	}
 }
+template<typename Op, typename T>
+__global__ void elemwiseOpKernel(T A, T* B, uint32_t M, uint32_t N)
+{
+	auto tx = threadIdx.x;
+	auto ty = threadIdx.y;
+	auto bx = blockIdx.x;
+	auto by = blockIdx.y;
+
+	uint32_t ROW = by * blockDim.x + ty;
+	uint32_t COL = bx * blockDim.y + tx;
+
+	if (ROW < M && COL < N)
+	{
+		B[ROW * N + COL] = Op(A, B[ROW * N + COL]);
+	}
+}
+template<typename Op, typename T>
+__global__ void elemwiseOpKernel(T A, T* B, T* dst, uint32_t M, uint32_t N)
+{
+	auto tx = threadIdx.x;
+	auto ty = threadIdx.y;
+	auto bx = blockIdx.x;
+	auto by = blockIdx.y;
+
+	uint32_t ROW = by * blockDim.x + ty;
+	uint32_t COL = bx * blockDim.y + tx;
+
+	if (ROW < M && COL < N)
+	{
+		dst[ROW * N + COL] = Op(A, B[ROW * N + COL]);
+	}
+}
+template<typename Op, typename T>
+__global__ void elemwiseOpKernel(T* A, T* B, T* dst, uint32_t M, uint32_t N)
+{
+	auto tx = threadIdx.x;
+	auto ty = threadIdx.y;
+	auto bx = blockIdx.x;
+	auto by = blockIdx.y;
+
+	uint32_t ROW = by * blockDim.x + ty;
+	uint32_t COL = bx * blockDim.y + tx;
+
+	if (ROW < M && COL < N)
+	{
+		dst[ROW * N + COL] = Op(A[ROW * N + COL], B[ROW * N + COL]);
+	}
+}
+
+//__global__ void hadamardKernel(float* A, float* B, uint32_t M, uint32_t N)
+//{
+//	auto tx = threadIdx.x;
+//	auto ty = threadIdx.y;
+//	auto bx = blockIdx.x;
+//	auto by = blockIdx.y;
+//
+//	uint32_t ROW = by * blockDim.x + ty;
+//	uint32_t COL = bx * blockDim.y + tx;
+//
+//	if (ROW < M && COL < N)
+//	{
+//		B[ROW * N + COL] *= A[ROW * N + COL];
+//	}
+//}
 
 __global__ void transposeKernel(float* A, float* T, uint32_t M, uint32_t N)
 {
@@ -55,21 +121,21 @@ __global__ void transposeKernel(float* A, float* T, uint32_t M, uint32_t N)
 	}
 }
 
-__global__ void matAddKernel(float* A, float* B, uint32_t M, uint32_t N)
-{
-	auto tx = threadIdx.x;
-	auto ty = threadIdx.y;
-	auto bx = blockIdx.x;
-	auto by = blockIdx.y;
-
-	uint32_t ROW = by * gridDim.y + ty;
-	uint32_t COL = bx * gridDim.x + tx;
-
-	if (ROW < M && COL < N)
-	{
-		B[ROW * N + COL] += A[ROW * N + COL];
-	}
-}
+//__global__ void matAddKernel(float* A, float* B, uint32_t M, uint32_t N)
+//{
+//	auto tx = threadIdx.x;
+//	auto ty = threadIdx.y;
+//	auto bx = blockIdx.x;
+//	auto by = blockIdx.y;
+//
+//	uint32_t ROW = by * gridDim.y + ty;
+//	uint32_t COL = bx * gridDim.x + tx;
+//
+//	if (ROW < M && COL < N)
+//	{
+//		B[ROW * N + COL] += A[ROW * N + COL];
+//	}
+//}
 
 __global__ void matMulKernel(float* A, float* B, float* C, uint32_t M, uint32_t N, uint32_t L)
 {
@@ -124,6 +190,7 @@ __global__ void matMulKernel(float* A, float* B, float* C, uint32_t M, uint32_t 
 }
 
 // Adds [M x 1] vector A to [M x N] vector B
+// Note: can probably be generalized via templating
 __global__ void vectMatAddKernel(float* A, float* B, uint32_t M, uint32_t N)
 {
 	__shared__ float _V[TILE_WIDTH];
@@ -151,10 +218,11 @@ __global__ void vectMatAddKernel(float* A, float* B, uint32_t M, uint32_t N)
 	}
 }
 
-template<bool use_bias, Activation* activation>
+// TODO: Fix for new Activation specifications
+template<bool use_bias, bool use_activation, typename Activation>
 void denseForward(float* X, float* W, float* B, float* R, uint32_t M, uint32_t N, uint32_t L);
 
-template<bool use_bias, Activation* activation>
-void denseBackprop(float* grad_prop, float* X, float* W, float* B, float* grad_dest, float* W_grad, float* B_grad, uint32_t M, uint32_t N, uint32_t L);
+template<bool use_bias, bool use_activation, typename Activation>
+void denseBackprop(float* grad, float* new_grad, float* z, float* X, float* W, float* B, float* W_grad, float* B_grad, size_t L, size_t M, size_t N);
 
 #endif // KERNEL_CUH

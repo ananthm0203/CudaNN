@@ -65,7 +65,7 @@ __global__ void softmax1DKernel1024M(float* X, size_t M)
 
 	float x = IDX < M ? X[IDX] : -std::numeric_limits<float>::infinity();
 	float x_max = x;
-	x_max = WarpAllReduce<ReduceMax, float>(x_max);
+	x_max = WarpAllReduce<MaxOp, float>(x_max);
 	if (!lane_id && IDX < M)
 	{
 		_V[warp_id] = x_max;
@@ -77,11 +77,11 @@ __global__ void softmax1DKernel1024M(float* X, size_t M)
 	{
 		x_max = _V[lane_id];
 	}
-	x_max = WarpAllReduce<ReduceMax, float>(x_max);
+	x_max = WarpAllReduce<MaxOp, float>(x_max);
 	x = IDX < M ? expf(x - x_max) : 0;
 
 	float x_sum = x;
-	x_sum = WarpAllReduce<ReduceSum, float>(x_sum);
+	x_sum = WarpAllReduce<SumOp, float>(x_sum);
 	if (!lane_id && IDX < M)
 	{
 		_V[warp_id] = x_sum;
@@ -94,7 +94,7 @@ __global__ void softmax1DKernel1024M(float* X, size_t M)
 		x_sum = _V[lane_id];
 	}
 
-	x_sum = WarpAllReduce<ReduceSum, float>(x_sum);
+	x_sum = WarpAllReduce<SumOp, float>(x_sum);
 	if (IDX < M)
 	{
 		X[IDX] = x / x_sum;

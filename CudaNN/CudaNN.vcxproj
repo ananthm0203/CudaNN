@@ -147,10 +147,12 @@
     <ClInclude Include="activation_kernels.cuh" />
     <ClInclude Include="kernel_nn.cuh" />
     <ClInclude Include="layer.h" />
+    <ClInclude Include="optimizers.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dense.cpp" />
     <ClCompile Include="layer.cpp" />
+    <ClCompile Include="optimizers.cpp" />
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="kernel_nn.cu" />

@@ -23,7 +23,34 @@ cudaError_t checkCuda(cudaError_t result)
 }
 
 template<typename T>
-struct ReduceMax
+struct DivOp
+{
+	__device__ T operator()(T val1, T val2)
+	{
+		return val1 / val2;
+	}
+};
+
+template<typename T>
+struct PowOp
+{
+	__device__ T operator()(T val1, T val2)
+	{
+		return pow(val2, val1);
+	}
+};
+
+template<typename T>
+struct MulOp
+{
+	__device__ T operator()(T val1, T val2)
+	{
+		return val1 * val2;
+	}
+};
+
+template<typename T>
+struct MaxOp
 {
 	__device__ T operator()(T val1, T val2)
 	{
@@ -32,7 +59,7 @@ struct ReduceMax
 };
 
 template<typename T>
-struct ReduceSum
+struct SumOp
 {
 	__device__ T operator()(T val1, T val2)
 	{

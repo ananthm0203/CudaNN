@@ -88,7 +88,7 @@ void denseBackprop(float* grad, float* new_grad, float* z, float* X, float* W, f
 			checkCuda(cudaMemcpy(grad_d, grad, grad_memsize, cudaMemcpyHostToDevice));
 			dim3 blocksPerGrid((L - 1) / TILE_WIDTH + 1, (N - 1) / TILE_WIDTH + 1);
 			dim3 threadsPerBlock(TILE_WIDTH, TILE_WIDTH);
-			hadamardKernel << <blocksPerGrid, threadsPerBlock >> > (z_d, grad_d, L, N);
+			elemwiseOpKernel<MulOp, float> << <blocksPerGrid, threadsPerBlock >> > (z_d, grad_d, grad_d, L, N);
 			checkCuda(cudaFree(z_d));
 			// We might need to copy back to the CPU for memory savings, but I don't think
 			// we need to do that for now;

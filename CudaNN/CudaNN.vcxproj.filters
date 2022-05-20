@@ -33,12 +33,18 @@
     <ClInclude Include="activation_kernels.cuh">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="optimizers.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="layer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="dense.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="optimizers.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
