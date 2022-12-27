@@ -13,44 +13,57 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Header Files\Graph">
+      <UniqueIdentifier>{781c33bf-14a4-4280-817c-3113f54969a8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="layer.h">
+    <ClInclude Include="engine\layers\layer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="dense.h">
+    <ClInclude Include="engine\layers\dense\dense.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="kernel_nn.cuh">
+    <ClInclude Include="engine\layers\dense\dense.cu">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="activations.h">
+    <ClInclude Include="engine\activations\activations.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="cuda_utils.cuh">
+    <ClInclude Include="engine\utils\cuda_utils.cuh">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="activation_kernels.cuh">
+    <ClInclude Include="engine\activations\activations.cuh">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="optimizers.h">
+    <ClInclude Include="engine\optimizers\optimizers.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\network.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\graph\Graph.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\graph\Node.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\layers\activations.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\utils\general_kernels.cuh" />
+    <ClInclude Include="engine\utils\shape.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\utils\tensor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\losses\losses.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="layer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="dense.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="optimizers.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <CudaCompile Include="kernel_nn.cu">
-      <Filter>Source Files</Filter>
-    </CudaCompile>
+    <CudaCompile Include="engine\optimizers\optimizers.cu" />
+    <CudaCompile Include="engine\losses\losses.cu" />
   </ItemGroup>
 </Project>

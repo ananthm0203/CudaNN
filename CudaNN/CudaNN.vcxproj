@@ -141,21 +141,25 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="activations.h" />
-    <ClInclude Include="dense.h" />
-    <ClInclude Include="cuda_utils.cuh" />
-    <ClInclude Include="activation_kernels.cuh" />
-    <ClInclude Include="kernel_nn.cuh" />
-    <ClInclude Include="layer.h" />
-    <ClInclude Include="optimizers.h" />
+    <ClInclude Include="engine\activations\activations.h" />
+    <ClInclude Include="engine\layers\activations.h" />
+    <ClInclude Include="engine\layers\dense\dense.h" />
+    <ClInclude Include="engine\losses\losses.h" />
+    <ClInclude Include="engine\utils\cuda_utils.cuh" />
+    <ClInclude Include="engine\activations\activations.cuh" />
+    <ClInclude Include="engine\graph\Graph.h" />
+    <ClInclude Include="engine\graph\Node.h" />
+    <ClInclude Include="engine\layers\dense\dense.cu" />
+    <ClInclude Include="engine\layers\layer.h" />
+    <ClInclude Include="engine\network.h" />
+    <ClInclude Include="engine\optimizers\optimizers.h" />
+    <ClInclude Include="engine\utils\general_kernels.cuh" />
+    <ClInclude Include="engine\utils\tensor.h" />
+    <ClInclude Include="engine\utils\shape.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="dense.cpp" />
-    <ClCompile Include="layer.cpp" />
-    <ClCompile Include="optimizers.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <CudaCompile Include="kernel_nn.cu" />
+    <CudaCompile Include="engine\losses\losses.cu" />
+    <CudaCompile Include="engine\optimizers\optimizers.cu" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

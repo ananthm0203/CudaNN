@@ -7,8 +7,15 @@
 #include <cuda_runtime.h>   // For cuda types
 #include <type_traits>
 
-#define TILE_WIDTH 32
-#define BLOCK_SIZE 8
+constexpr auto TILE_WIDTH = 32;
+constexpr auto BLOCK_SIZE = 8;
+
+constexpr auto BLCK_X = 16;
+constexpr auto BLCK_Y = 16;
+constexpr auto BLCK_Z = 4;
+
+#define CEILDIV(N, D)		((N - 1) / D + 1)
+#define TILENO(N)			(CEILDIV(N, TILE_WIDTH))
 
 inline
 cudaError_t checkCuda(cudaError_t result)
