@@ -12,5 +12,10 @@ struct Shape
 		return H == other.H && W == other.W && C == other.C;
 	}
 
+	bool maligned(const Shape& other) const
+	{
+		return W == other.H && C == other.C;
+	}
+
 	size_t H, W, C, size;
 };

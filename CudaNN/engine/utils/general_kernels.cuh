@@ -5,9 +5,11 @@
 
 #include <cuda_runtime.h>
 #include <device_functions.h>
+#include <functional>
 
-template<template<typename> class Op_Outer, template<typename> class Op_Inner, typename T>
-__global__ void elemwiseOpKernel(T C_A, T* A, T C_B, T* B, T* dst, size_t H, size_t W, size_t C)
+template<typename... Args>
+__global__ void elemwiseOpKernel(size_t H, size_t W, size_t C,
+	std::function<void(size_t, Args...)> f, Args... inputs)
 {
 	auto tx = threadIdx.x;
 	auto ty = threadIdx.y;
@@ -23,72 +25,93 @@ __global__ void elemwiseOpKernel(T C_A, T* A, T C_B, T* B, T* dst, size_t H, siz
 	if (COL < H && ROW < W && AISLE < C)
 	{
 		auto idx = ROW * W * C + COL * C + AISLE;
-		dst[idx] = Op_Outer<T>(Op_Inner<T>(C_A, A[idx]), Op_Inner<T>(C_B, B[idx]));
+		f(idx, inputs...);
 	}
 }
 
-template<template<typename> class Op, typename T>
-__global__ void elemwiseOpKernel(T* A, T* dst, size_t H, size_t W, size_t C)
-{
-	auto tx = threadIdx.x;
-	auto ty = threadIdx.y;
-	auto tz = threadIdx.z;
-	auto bx = blockIdx.x;
-	auto by = blockIdx.y;
-	auto bz = blockIdx.z;
-
-	size_t COL = bx * blockDim.x + tx;
-	size_t ROW = by * blockDim.y + ty;
-	size_t AISLE = bz * blockDim.z + bz;
-
-	if (COL < H && ROW < W && AISLE < C)
-	{
-		auto idx = ROW * W * C + COL * C + AISLE;
-		dst[idx] = Op<T>(A[idx]);
-	}
-}
-
-template<template<typename> class Op, typename T>
-__global__ void elemwiseOpKernel(T A, T* B, T* dst, size_t H, size_t W, size_t C)
-{
-	auto tx = threadIdx.x;
-	auto ty = threadIdx.y;
-	auto tz = threadIdx.z;
-	auto bx = blockIdx.x;
-	auto by = blockIdx.y;
-	auto bz = blockIdx.z;
-
-	size_t COL = bx * blockDim.x + tx;
-	size_t ROW = by * blockDim.y + ty;
-	size_t AISLE = bz * blockDim.z + bz;
-
-	if (COL < H && ROW < W && AISLE < C)
-	{
-		auto idx = ROW * W * C + COL * C + AISLE;
-		dst[idx] = Op<T>(A, B[idx]);
-	}
-}
-
-template<template<typename> class Op, typename T>
-__global__ void elemwiseOpKernel(T* A, T* B, T* dst, size_t H, size_t W, size_t C)
-{
-	auto tx = threadIdx.x;
-	auto ty = threadIdx.y;
-	auto tz = threadIdx.z;
-	auto bx = blockIdx.x;
-	auto by = blockIdx.y;
-	auto bz = blockIdx.z;
-
-	size_t ROW = bx * blockDim.x + tx;
-	size_t COL = by * blockDim.y + ty;
-	size_t AISLE = bz * blockDim.z + bz;
-
-	if (COL < H && ROW < W && AISLE < C)
-	{
-		auto idx = ROW * W * C + COL * C + AISLE;
-		dst[idx] = Op<T>(A[idx], B[idx]);
-	}
-}
+//template<template<typename> class Op_Outer, template<typename> class Op_Inner, typename T>
+//__global__ void elemwiseOpKernel(T C_A, T* A, T C_B, T* B, T* dst, size_t H, size_t W, size_t C)
+//{
+//	auto tx = threadIdx.x;
+//	auto ty = threadIdx.y;
+//	auto tz = threadIdx.z;
+//	auto bx = blockIdx.x;
+//	auto by = blockIdx.y;
+//	auto bz = blockIdx.z;
+//
+//	size_t COL = bx * blockDim.x + tx;
+//	size_t ROW = by * blockDim.y + ty;
+//	size_t AISLE = bz * blockDim.z + bz;
+//
+//	if (COL < H && ROW < W && AISLE < C)
+//	{
+//		auto idx = ROW * W * C + COL * C + AISLE;
+//		dst[idx] = Op_Outer<T>(Op_Inner<T>(C_A, A[idx]), Op_Inner<T>(C_B, B[idx]));
+//	}
+//}
+//
+//template<template<typename> class Op, typename T>
+//__global__ void elemwiseOpKernel(T* A, T* dst, size_t H, size_t W, size_t C)
+//{
+//	auto tx = threadIdx.x;
+//	auto ty = threadIdx.y;
+//	auto tz = threadIdx.z;
+//	auto bx = blockIdx.x;
+//	auto by = blockIdx.y;
+//	auto bz = blockIdx.z;
+//
+//	size_t COL = bx * blockDim.x + tx;
+//	size_t ROW = by * blockDim.y + ty;
+//	size_t AISLE = bz * blockDim.z + bz;
+//
+//	if (COL < H && ROW < W && AISLE < C)
+//	{
+//		auto idx = ROW * W * C + COL * C + AISLE;
+//		dst[idx] = Op<T>(A[idx]);
+//	}
+//}
+//
+//template<template<typename> class Op, typename T>
+//__global__ void elemwiseOpKernel(T A, T* B, T* dst, size_t H, size_t W, size_t C)
+//{
+//	auto tx = threadIdx.x;
+//	auto ty = threadIdx.y;
+//	auto tz = threadIdx.z;
+//	auto bx = blockIdx.x;
+//	auto by = blockIdx.y;
+//	auto bz = blockIdx.z;
+//
+//	size_t COL = bx * blockDim.x + tx;
+//	size_t ROW = by * blockDim.y + ty;
+//	size_t AISLE = bz * blockDim.z + bz;
+//
+//	if (COL < H && ROW < W && AISLE < C)
+//	{
+//		auto idx = ROW * W * C + COL * C + AISLE;
+//		dst[idx] = Op<T>(A, B[idx]);
+//	}
+//}
+//
+//template<template<typename> class Op, typename T>
+//__global__ void elemwiseOpKernel(T* A, T* B, T* dst, size_t H, size_t W, size_t C)
+//{
+//	auto tx = threadIdx.x;
+//	auto ty = threadIdx.y;
+//	auto tz = threadIdx.z;
+//	auto bx = blockIdx.x;
+//	auto by = blockIdx.y;
+//	auto bz = blockIdx.z;
+//
+//	size_t ROW = bx * blockDim.x + tx;
+//	size_t COL = by * blockDim.y + ty;
+//	size_t AISLE = bz * blockDim.z + bz;
+//
+//	if (COL < H && ROW < W && AISLE < C)
+//	{
+//		auto idx = ROW * W * C + COL * C + AISLE;
+//		dst[idx] = Op<T>(A[idx], B[idx]);
+//	}
+//}
 
 template<typename T>
 __global__ void transposeKernel(T* A, T* A_T, size_t H, size_t W, size_t C)

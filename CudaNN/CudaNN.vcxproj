@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -117,7 +117,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp20</LanguageStandard>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -145,6 +145,10 @@
     <ClInclude Include="engine\layers\activations.h" />
     <ClInclude Include="engine\layers\dense\dense.h" />
     <ClInclude Include="engine\losses\losses.h" />
+    <ClInclude Include="engine\ops\add\add.h" />
+    <ClInclude Include="engine\gradient\gradient.h" />
+    <ClInclude Include="engine\ops\mul\mul.h" />
+    <ClInclude Include="engine\ops\op.h" />
     <ClInclude Include="engine\utils\cuda_utils.cuh" />
     <ClInclude Include="engine\activations\activations.cuh" />
     <ClInclude Include="engine\graph\Graph.h" />
@@ -154,11 +158,16 @@
     <ClInclude Include="engine\network.h" />
     <ClInclude Include="engine\optimizers\optimizers.h" />
     <ClInclude Include="engine\utils\general_kernels.cuh" />
-    <ClInclude Include="engine\utils\tensor.h" />
-    <ClInclude Include="engine\utils\shape.h" />
+    <ClInclude Include="engine\base\tensor.h" />
+    <ClInclude Include="engine\base\shape.h" />
+    <ClInclude Include="engine\vars\gen_tensor.h" />
+    <ClInclude Include="engine\vars\input.h" />
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="engine\losses\losses.cu" />
+    <CudaCompile Include="engine\ops\add\add.cu" />
+    <CudaCompile Include="engine\gradient\gradient.cu" />
+    <CudaCompile Include="engine\ops\mul\mul.cu" />
     <CudaCompile Include="engine\optimizers\optimizers.cu" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

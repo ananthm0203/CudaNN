@@ -17,6 +17,12 @@ constexpr auto BLCK_Z = 4;
 #define CEILDIV(N, D)		((N - 1) / D + 1)
 #define TILENO(N)			(CEILDIV(N, TILE_WIDTH))
 
+#define DEFAULT_CUDA_DIMS(H, W, C)													\
+	dim3 blocksPerGrid(CEILDIV(H, BLCK_X), CEILDIV(W, BLCK_Y), CEILDIV(C, BLCK_Z));	\
+	dim3 threadsPerBlock(BLCK_X, BLCK_Y, BLCK_Z);									\
+
+#define DEFAULT_CUDA_DIMS_FROM_SHAPE(shape) DEFAULT_CUDA_DIMS(shape.H, shape.W, shape.C)
+
 inline
 cudaError_t checkCuda(cudaError_t result)
 {

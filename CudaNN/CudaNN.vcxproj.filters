@@ -52,18 +52,39 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="engine\utils\general_kernels.cuh" />
-    <ClInclude Include="engine\utils\shape.h">
+    <ClInclude Include="engine\base\shape.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="engine\utils\tensor.h">
+    <ClInclude Include="engine\base\tensor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="engine\losses\losses.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\ops\op.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\ops\mul\mul.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\ops\add\add.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\gradient\gradient.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\vars\input.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\vars\gen_tensor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="engine\optimizers\optimizers.cu" />
     <CudaCompile Include="engine\losses\losses.cu" />
+    <CudaCompile Include="engine\ops\add\add.cu" />
+    <CudaCompile Include="engine\gradient\gradient.cu" />
+    <CudaCompile Include="engine\ops\mul\mul.cu" />
   </ItemGroup>
 </Project>
