@@ -31,6 +31,11 @@ public:
 		tensor.initialize(init);
 	}
 
+	Tensor* operator()()
+	{
+		return &tensor;
+	}
+
 private:
 
 	Tensor tensor;
