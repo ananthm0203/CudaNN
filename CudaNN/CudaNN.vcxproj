@@ -161,6 +161,7 @@
     <ClInclude Include="engine\base\tensor.h" />
     <ClInclude Include="engine\base\shape.h" />
     <ClInclude Include="engine\vars\gen_tensor.h" />
+    <ClInclude Include="engine\vars\initializers\initializers.h" />
     <ClInclude Include="engine\vars\input.h" />
   </ItemGroup>
   <ItemGroup>

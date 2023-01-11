@@ -79,6 +79,9 @@
     <ClInclude Include="engine\vars\gen_tensor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="engine\vars\initializers\initializers.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="engine\optimizers\optimizers.cu" />

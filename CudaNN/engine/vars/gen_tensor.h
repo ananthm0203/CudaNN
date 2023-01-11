@@ -3,6 +3,7 @@
 #include "../base/tensor.h"
 #include "../gradient/gradient.h"
 #include "../ops/op.h"
+#include "initializers/initializers.h"
 
 class GenTensor
 {
@@ -20,9 +21,17 @@ public:
 	GenTensor(const Shape& shape, InitMethod im)
 		: tensor(shape, Tensor::LayerType::Weight)
 	{
-		// TODO: initialization
+		ZeroInitializer zi;
+		tensor.initialize(zi);
 	};
 
+	GenTensor(const Shape& shape, InitMethod im, Initializer& init)
+		: tensor(shape, Tensor::LayerType::Weight)
+	{
+		tensor.initialize(init);
+	}
+
 private:
+
 	Tensor tensor;
 };

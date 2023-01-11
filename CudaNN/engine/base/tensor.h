@@ -2,6 +2,7 @@
 
 #include "shape.h"
 #include "../gradient/gradient.h"
+#include "../vars/initializers/initializers.h"
 
 #include <memory>
 #include <cassert>
@@ -47,7 +48,7 @@ class Tensor
 {
 public:
 
-	enum LayerType : int
+	enum class LayerType
 	{
 		Input,
 		Output,
@@ -56,9 +57,9 @@ public:
 
 	Tensor() = default;
 
-	Tensor(const Shape& shape, int layertype)
+	Tensor(const Shape& shape, Tensor::LayerType layertype)
 		: shape(shape), X(std::make_shared<float[]>(shape.size)),
-		grad(layertype == Input ? CudaGradient() : CudaGradient(shape)),
+		grad(layertype == Tensor::LayerType::Input ? CudaGradient() : CudaGradient(shape)),
 		layertype(layertype)
 	{
 	};
@@ -122,12 +123,6 @@ public:
 	float* raw() { return X.get(); }
 	void copy_to(float* buf) { memcpy(buf, X.get(), shape.size); }
 
-	/*Layer* get_prev_layer() const { return prev_layer; }
-	void set_prev_layer(Layer* layer) { prev_layer = layer; }
-
-	const std::vector<Layer*>& get_next_layers() { return next_layers; }
-	void add_next_layer(Layer* layer) { next_layers.push_back(layer); }*/
-
 	Op* from() { return _from; }
 	void set_from(Op* op) { _from = op; }
 
@@ -147,16 +142,31 @@ public:
 		}
 	}
 	bool frozen() { return grad.empty(); }
-	bool updateable() { return layertype == Weight; }
+	bool updateable() { return layertype == Tensor::LayerType::Weight; }
 	/*void freeze() { no_grad = true; }
 	void unfreeze() { no_grad = false; }*/
 
-protected:
+	void initialize(Initializer& init)
+	{
+		if (layertype != LayerType::Weight || initialized)
+		{
+			return;
+		}
+		for (size_t i = 0; i < shape.size; ++i)
+		{
+			init(X.get(), i);
+		}
+		initialized = true;
+	}
+
+private:
 
 	Shape shape;
 	std::shared_ptr<float[]> X;
 
 	Op* _from;
 	CudaGradient grad;
-	int layertype;
+	Tensor::LayerType layertype;
+
+	bool initialized = false;
 };
