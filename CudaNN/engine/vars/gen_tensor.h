@@ -1,8 +1,6 @@
 #pragma once
 
 #include "../base/tensor.h"
-#include "../gradient/gradient.h"
-#include "../ops/op.h"
 #include "initializers/initializers.h"
 
 class GenTensor
