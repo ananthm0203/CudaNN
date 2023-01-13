@@ -147,6 +147,7 @@
     <ClInclude Include="engine\losses\losses.h" />
     <ClInclude Include="engine\ops\add\add.h" />
     <ClInclude Include="engine\gradient\gradient.h" />
+    <ClInclude Include="engine\ops\losses\crossentropy\crossentropy.h" />
     <ClInclude Include="engine\ops\mul\mul.h" />
     <ClInclude Include="engine\ops\op.h" />
     <ClInclude Include="engine\utils\cuda_utils.cuh" />
@@ -168,6 +169,7 @@
     <CudaCompile Include="engine\losses\losses.cu" />
     <CudaCompile Include="engine\ops\add\add.cu" />
     <CudaCompile Include="engine\gradient\gradient.cu" />
+    <CudaCompile Include="engine\ops\losses\crossentropy\crossentropy.cu" />
     <CudaCompile Include="engine\ops\mul\mul.cu" />
     <CudaCompile Include="engine\optimizers\optimizers.cu" />
   </ItemGroup>
