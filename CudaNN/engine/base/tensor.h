@@ -141,10 +141,8 @@ public:
 			grad.accum_from_raw(reinterpret_cast<uintptr_t>(op), other_grad_d);
 		}
 	}
-	bool frozen() { return grad.empty(); }
+	bool no_grad() { return grad.empty(); }
 	bool updateable() { return layertype == Tensor::LayerType::Weight; }
-	/*void freeze() { no_grad = true; }
-	void unfreeze() { no_grad = false; }*/
 
 	void initialize(Initializer& init)
 	{

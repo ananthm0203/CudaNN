@@ -29,90 +29,6 @@ __global__ void elemwiseOpKernel(size_t H, size_t W, size_t C,
 	}
 }
 
-//template<template<typename> class Op_Outer, template<typename> class Op_Inner, typename T>
-//__global__ void elemwiseOpKernel(T C_A, T* A, T C_B, T* B, T* dst, size_t H, size_t W, size_t C)
-//{
-//	auto tx = threadIdx.x;
-//	auto ty = threadIdx.y;
-//	auto tz = threadIdx.z;
-//	auto bx = blockIdx.x;
-//	auto by = blockIdx.y;
-//	auto bz = blockIdx.z;
-//
-//	size_t COL = bx * blockDim.x + tx;
-//	size_t ROW = by * blockDim.y + ty;
-//	size_t AISLE = bz * blockDim.z + bz;
-//
-//	if (COL < H && ROW < W && AISLE < C)
-//	{
-//		auto idx = ROW * W * C + COL * C + AISLE;
-//		dst[idx] = Op_Outer<T>(Op_Inner<T>(C_A, A[idx]), Op_Inner<T>(C_B, B[idx]));
-//	}
-//}
-//
-//template<template<typename> class Op, typename T>
-//__global__ void elemwiseOpKernel(T* A, T* dst, size_t H, size_t W, size_t C)
-//{
-//	auto tx = threadIdx.x;
-//	auto ty = threadIdx.y;
-//	auto tz = threadIdx.z;
-//	auto bx = blockIdx.x;
-//	auto by = blockIdx.y;
-//	auto bz = blockIdx.z;
-//
-//	size_t COL = bx * blockDim.x + tx;
-//	size_t ROW = by * blockDim.y + ty;
-//	size_t AISLE = bz * blockDim.z + bz;
-//
-//	if (COL < H && ROW < W && AISLE < C)
-//	{
-//		auto idx = ROW * W * C + COL * C + AISLE;
-//		dst[idx] = Op<T>(A[idx]);
-//	}
-//}
-//
-//template<template<typename> class Op, typename T>
-//__global__ void elemwiseOpKernel(T A, T* B, T* dst, size_t H, size_t W, size_t C)
-//{
-//	auto tx = threadIdx.x;
-//	auto ty = threadIdx.y;
-//	auto tz = threadIdx.z;
-//	auto bx = blockIdx.x;
-//	auto by = blockIdx.y;
-//	auto bz = blockIdx.z;
-//
-//	size_t COL = bx * blockDim.x + tx;
-//	size_t ROW = by * blockDim.y + ty;
-//	size_t AISLE = bz * blockDim.z + bz;
-//
-//	if (COL < H && ROW < W && AISLE < C)
-//	{
-//		auto idx = ROW * W * C + COL * C + AISLE;
-//		dst[idx] = Op<T>(A, B[idx]);
-//	}
-//}
-//
-//template<template<typename> class Op, typename T>
-//__global__ void elemwiseOpKernel(T* A, T* B, T* dst, size_t H, size_t W, size_t C)
-//{
-//	auto tx = threadIdx.x;
-//	auto ty = threadIdx.y;
-//	auto tz = threadIdx.z;
-//	auto bx = blockIdx.x;
-//	auto by = blockIdx.y;
-//	auto bz = blockIdx.z;
-//
-//	size_t ROW = bx * blockDim.x + tx;
-//	size_t COL = by * blockDim.y + ty;
-//	size_t AISLE = bz * blockDim.z + bz;
-//
-//	if (COL < H && ROW < W && AISLE < C)
-//	{
-//		auto idx = ROW * W * C + COL * C + AISLE;
-//		dst[idx] = Op<T>(A[idx], B[idx]);
-//	}
-//}
-
 template<typename T>
 __global__ void transposeKernel(T* A, T* A_T, size_t H, size_t W, size_t C)
 {
@@ -232,6 +148,48 @@ __global__ void vectMatAddKernel(T* V, T* B, T* dst, size_t H, size_t W, size_t 
 		auto vidx = COL * C + AISLE;
 		auto midx = ROW * W * C + COL * C + AISLE;
 		dst[midx] = B[midx] + V[vidx];
+	}
+}
+
+template<typename T>
+__global__ void softmax1DKernel1024M(T* X, T* X_DEST, size_t C)
+{
+	__shared__ float _V[C / warpSize];
+
+	auto tx = threadIdx.x;
+	auto bx = blockIdx.x;
+	auto idx = blockDim.x * bx + tx;
+
+	auto warp_id = tx / warpSize;
+	auto lane_id = tx % warpSize;
+
+	float x = idx < C ? X[idx] : -std::numeric_limits<float>::infinity();
+	float x_max = WarpAllReduce<MaxOp>(x);
+	if (!lane_id)
+	{
+		_V[warp_id] = x_max;
+	}
+
+	__syncthreads();
+
+	x_max = lane_id < (C / warpSize) ? _V[lane_id] : -std::numeric_limits<float>::infinity();
+	x_max = WarpAllReduce<MaxOp>(x_max);
+
+	x = idx < C ? expf(x - x_max) : 0;
+	float x_sum = WarpAllReduce<SumOp>(x);
+	if (!lane_id)
+	{
+		_V[warp_id] = x_sum;
+	}
+
+	__syncthreads();
+
+	x_sum = lane_id < (C / warpSize) ? _V[lane_id] : 0;
+	x_sum = WarpAllReduce<SumOp>(x_sum);
+
+	if (idx < C)
+	{
+		X_DEST[idx] = x / x_sum;
 	}
 }
 

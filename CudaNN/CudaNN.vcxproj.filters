@@ -58,9 +58,6 @@
     <ClInclude Include="engine\base\tensor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="engine\losses\losses.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="engine\ops\op.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -82,16 +79,19 @@
     <ClInclude Include="engine\vars\initializers\initializers.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="engine\ops\losses\crossentropy\crossentropy.h">
+    <ClInclude Include="engine\ops\crossentropy\crossentropy.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\ops\relu\relu.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="engine\optimizers\optimizers.cu" />
-    <CudaCompile Include="engine\losses\losses.cu" />
     <CudaCompile Include="engine\ops\add\add.cu" />
     <CudaCompile Include="engine\gradient\gradient.cu" />
     <CudaCompile Include="engine\ops\mul\mul.cu" />
-    <CudaCompile Include="engine\ops\losses\crossentropy\crossentropy.cu" />
+    <CudaCompile Include="engine\ops\crossentropy\crossentropy.cu" />
+    <CudaCompile Include="engine\ops\relu\relu.cu" />
   </ItemGroup>
 </Project>
