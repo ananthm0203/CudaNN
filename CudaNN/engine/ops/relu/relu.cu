@@ -5,7 +5,7 @@
 #include <functional>
 #include <cmath>
 
-void Relu::forward()
+void Relu::forwards()
 {
 	float* relu_d;
 
@@ -16,7 +16,7 @@ void Relu::forward()
 	auto f(static_cast<std::function<void(size_t, float*)>>(
 		[](size_t idx, float* relu_d) { relu_d[idx] = std::max(0.0f, relu_d[idx]); }
 	));
-	elemwiseOpKernel(in->get_shape().H, in->get_shape().W, in->get_shape().C, f, relu_d);
+	elemwiseOpKernel(in->get_shape().H, in->get_shape().W, in->get_shape().W, f, relu_d);
 
 	checkCuda(cudaMemcpy(out.raw(), relu_d, in->get_shape().size, cudaMemcpyDeviceToHost));
 
@@ -34,7 +34,7 @@ void Relu::backwards()
 	auto f(static_cast<std::function<void(size_t, float*)>>(
 		[](size_t idx, float* relu_grad_d) { relu_grad_d[idx] = relu_grad_d[idx] > 0.0f ? 1.0f : 0.0f; }
 	));
-	elemwiseOpKernel(in->get_shape().H, in->get_shape().W, in->get_shape().C, f, relu_grad_d);
+	elemwiseOpKernel(in->get_shape().H, in->get_shape().W, in->get_shape().W, f, relu_grad_d);
 
 	in->update_gradient(this, relu_grad_d);
 

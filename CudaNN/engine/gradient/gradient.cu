@@ -38,7 +38,7 @@ void CudaGradient::accum_from_raw(uintptr_t handler_id, float* other_grad_d)
 	checkCuda(cudaMalloc(&grad_d, shape.size));
 	checkCuda(cudaMemcpy(grad_d, grad.get(), shape.size, cudaMemcpyHostToDevice));
 
-	dim3 blocksPerGrid(CEILDIV(shape.H, BLCK_X), CEILDIV(shape.W, BLCK_Y), CEILDIV(shape.C, BLCK_Z));
+	dim3 blocksPerGrid(CEILDIV(shape.H, BLCK_X), CEILDIV(shape.W, BLCK_Y), CEILDIV(shape.W, BLCK_Z));
 	dim3 threadsPerBlock(BLCK_X, BLCK_Y, BLCK_Z);
 
 	elemwiseOpKernel << <blocksPerGrid, threadsPerBlock >> > (shape.H, shape.W, shape.C,

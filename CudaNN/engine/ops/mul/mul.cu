@@ -4,7 +4,7 @@
 
 #include <cuda_runtime.h>
 
-void MMul::forward()
+void MMul::forwards()
 {
 	float* out_d, * lhs_d, * rhs_d;
 
@@ -18,7 +18,7 @@ void MMul::forward()
 
 	auto& shape = out.get_shape();
 
-	dim3 blocksPerGrid(CEILDIV(shape.H, BLCK_X), CEILDIV(shape.W, BLCK_Y), CEILDIV(shape.C, BLCK_Z));
+	dim3 blocksPerGrid(CEILDIV(shape.H, BLCK_X), CEILDIV(shape.W, BLCK_Y), CEILDIV(shape.W, BLCK_Z));
 	dim3 threadsPerBlock(BLCK_X, BLCK_Y, BLCK_Z);
 
 	matMulKernel << <blocksPerGrid, threadsPerBlock >> > (lhs_d, rhs_d, out_d,

@@ -33,9 +33,9 @@ static __device__ void _crossentropy_inner(float* y_true, float* y_pred, float* 
 	}
 }
 
-void CrossEntropy::forward()
+void CrossEntropy::forwards()
 {
-	auto n = y_true->get_shape().C;
+	auto n = y_true->get_shape().W;
 	auto pow2_ceil = 1 << (32 - __builtin_clz(static_cast<unsigned int>(n - 1)));
 
 	float* ce_d;
@@ -62,7 +62,7 @@ void CrossEntropy::forward()
 
 void CrossEntropy::backwards()
 {
-	auto n = y_true->get_shape().C;
+	auto n = y_true->get_shape().W;
 	auto pow2_ceil = 1 << (32 - __builtin_clz(static_cast<unsigned int>(n - 1)));
 
 	float* ce_grad_d;
@@ -109,9 +109,9 @@ static __device__ void _softmax_crossentropy_inner(float* y_true, float* y_pred,
 	softmax[tx] = 0;
 }
 
-void SoftmaxCrossEntropyWithLogits::forward()
+void SoftmaxCrossEntropyWithLogits::forwards()
 {
-	auto n = y_true->get_shape().C;
+	auto n = y_true->get_shape().W;
 	auto pow2_ceil = 1 << (32 - __builtin_clz(static_cast<unsigned int>(n - 1)));
 
 	float* ce_d;
@@ -143,7 +143,7 @@ void SoftmaxCrossEntropyWithLogits::forward()
 
 void SoftmaxCrossEntropyWithLogits::backwards()
 {
-	auto n = y_true->get_shape().C;
+	auto n = y_true->get_shape().W;
 	auto pow2_ceil = 1 << (32 - __builtin_clz(static_cast<unsigned int>(n - 1)));
 
 	float* ce_grad_d;

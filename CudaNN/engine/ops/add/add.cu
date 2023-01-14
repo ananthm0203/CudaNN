@@ -1,6 +1,6 @@
 #include "add.h"
 
-void Add::forward()
+void Add::forwards()
 {
 	auto& shape = out.get_shape();
 

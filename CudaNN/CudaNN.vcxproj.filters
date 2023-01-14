@@ -85,6 +85,9 @@
     <ClInclude Include="engine\ops\relu\relu.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="engine\ops\softmax\softmax.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="engine\optimizers\optimizers.cu" />
@@ -93,5 +96,6 @@
     <CudaCompile Include="engine\ops\mul\mul.cu" />
     <CudaCompile Include="engine\ops\crossentropy\crossentropy.cu" />
     <CudaCompile Include="engine\ops\relu\relu.cu" />
+    <CudaCompile Include="engine\ops\softmax\softmax.cu" />
   </ItemGroup>
 </Project>

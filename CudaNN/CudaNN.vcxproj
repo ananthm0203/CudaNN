@@ -150,6 +150,7 @@
     <ClInclude Include="engine\ops\mul\mul.h" />
     <ClInclude Include="engine\ops\op.h" />
     <ClInclude Include="engine\ops\relu\relu.h" />
+    <ClInclude Include="engine\ops\softmax\softmax.h" />
     <ClInclude Include="engine\utils\cuda_utils.cuh" />
     <ClInclude Include="engine\activations\activations.cuh" />
     <ClInclude Include="engine\graph\Graph.h" />
@@ -171,6 +172,7 @@
     <CudaCompile Include="engine\ops\crossentropy\crossentropy.cu" />
     <CudaCompile Include="engine\ops\mul\mul.cu" />
     <CudaCompile Include="engine\ops\relu\relu.cu" />
+    <CudaCompile Include="engine\ops\softmax\softmax.cu" />
     <CudaCompile Include="engine\optimizers\optimizers.cu" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

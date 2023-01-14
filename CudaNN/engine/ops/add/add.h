@@ -23,7 +23,7 @@ public:
 		return &out;
 	}
 
-	void forward();
+	void forwards();
 	void backwards()
 	{
 		auto& in_grad = out.gradient();

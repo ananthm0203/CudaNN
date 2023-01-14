@@ -18,7 +18,7 @@ public:
 		return &out;
 	}
 
-	void forward();
+	void forwards();
 	void backwards();
 
 protected:
@@ -45,7 +45,7 @@ public:
 		return &out;
 	}
 
-	void forward();
+	void forwards();
 	void backwards();
 
 private:

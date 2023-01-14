@@ -12,12 +12,12 @@ public:
 		handle_inputs(lhs, rhs);
 		this->lhs = lhs;
 		this->rhs = rhs;
-		out = Tensor(Shape(lhs->get_shape().H, rhs->get_shape().W, lhs->get_shape().C),
+		out = Tensor(Shape(lhs->get_shape().H, rhs->get_shape().W, lhs->get_shape().W),
 			Tensor::LayerType::Output);
 		return &out;
 	}
 
-	void forward();
+	void forwards();
 	void backwards();
 
 private:
