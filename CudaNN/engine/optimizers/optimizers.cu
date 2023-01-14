@@ -4,66 +4,92 @@
 
 #include <cuda_runtime.h>
 
-__device__ void adam_update_inner(float* X, float* M, float* V, float lr, float eps, const Shape& shape)
+void Optimizer::update_grads()
 {
-	auto tx = threadIdx.x;
-	auto ty = threadIdx.y;
-	auto tz = threadIdx.z;
-	auto bx = blockIdx.x;
-	auto by = blockIdx.y;
-	auto bz = blockIdx.z;
 
-	size_t COL = bx * blockDim.x + tx;
-	size_t ROW = by * blockDim.y + ty;
-	size_t AISLE = bz * blockDim.z + bz;
+	auto f(static_cast<std::function<void(size_t, float*, float*)>>(
+		[&](size_t ind, float* A, float* B) { B[ind] += A[ind] / batch_size; }
+	));
 
-	if (COL < shape.H && ROW < shape.W && AISLE < shape.C)
+	for (auto& wgp : weights)
 	{
-		auto idx = ROW * shape.W * shape.C + COL * shape.C + AISLE;
-		X[idx] -= lr / sqrtf(V[idx]) * M[idx];
+		float* grad_d;
+		float* accum_grad_d;
+
+		checkCuda(cudaMalloc(&grad_d, wgp.first->get_shape().size));
+		checkCuda(cudaMalloc(&accum_grad_d, wgp.first->get_shape().size));
+
+		checkCuda(cudaMemcpy(grad_d, wgp.first->gradient().raw(), wgp.first->get_shape().size, cudaMemcpyHostToDevice));
+		checkCuda(cudaMemcpy(accum_grad_d, wgp.second.raw(), wgp.first->get_shape().size, cudaMemcpyHostToDevice));
+
+		auto& shape = wgp.first->get_shape();
+
+		DEFAULT_CUDA_DIMS_FROM_SHAPE(shape);
+
+		elemwiseOpKernel << <blocksPerGrid, threadsPerBlock >> > (shape.H, shape.W, shape.C, f, grad_d, accum_grad_d);
+
+		checkCuda(cudaFree(accum_grad_d));
+		checkCuda(cudaFree(grad_d));
 	}
 }
 
-__global__ void Adam::cuda_adam_update(const GV& gv, float beta1, float beta2, float epsilon, float timestep, float lr)
+__global__ void Adam::update()
 {
-	float* grad_d;
-	float* M_d;
-	float* V_d;
+	for (size_t i = 0; i < weights.size(); ++i)
+	{
+		auto& wgp = weights[i];
+		auto& mvp = mv_pairs[i];
 
-	checkCuda(cudaMalloc(&grad_d, gv.shape.size));
-	checkCuda(cudaMalloc(&M_d, gv.shape.size));
-	checkCuda(cudaMalloc(&V_d, gv.shape.size));
+		auto& weight = wgp.first;
+		auto& grad = wgp.second;
+		auto& shape = grad.get_shape();
 
-	checkCuda(cudaMemcpy(&grad_d, gv.G, gv.shape.size, cudaMemcpyHostToDevice));
-	checkCuda(cudaMemcpy(&M_d, gv.M.get(), gv.shape.size, cudaMemcpyHostToDevice));
-	checkCuda(cudaMemcpy(&V_d, gv.V.get(), gv.shape.size, cudaMemcpyHostToDevice));
+		float* grad_d;
+		float* M_d;
+		float* V_d;
 
-	dim3 blocksPerGrid(TILENO(gv.shape.H), TILENO(gv.shape.C));
-	dim3 threadsPerBlock(TILE_WIDTH, TILE_WIDTH);
+		checkCuda(cudaMalloc(&grad_d, shape.size));
+		checkCuda(cudaMalloc(&M_d, shape.size));
+		checkCuda(cudaMalloc(&V_d, shape.size));
 
-	elemwiseOpKernel<SumOp, MulOp> <<<blocksPerGrid, threadsPerBlock>>>(beta1, M_d, 1 - beta1, grad_d, M_d, gv.shape.H, gv.shape.W, gv.shape.C);
-	elemwiseOpKernel<MulOp> << <blocksPerGrid, threadsPerBlock >> > (grad_d, grad_d, gv.shape.H, gv.shape.W, gv.shape.C);
-	elemwiseOpKernel<SumOp, MulOp> << <blocksPerGrid, threadsPerBlock >> > (beta2, V_d, 1 - beta2, grad_d, V_d, gv.shape.H, gv.shape.W, gv.shape.C);
+		checkCuda(cudaMemcpy(grad_d, grad.raw(), shape.size, cudaMemcpyHostToDevice));
+		checkCuda(cudaMemcpy(M_d, mvp.first.raw(), shape.size, cudaMemcpyHostToDevice));
+		checkCuda(cudaMemcpy(V_d, mvp.second.raw(), shape.size, cudaMemcpyHostToDevice));
 
-	elemwiseOpKernel<MulOp> << <blocksPerGrid, threadsPerBlock >> > (1 / (1 - pow(beta1, timestep)), M_d, M_d, gv.shape.H, gv.shape.W, gv.shape.C);
-	elemwiseOpKernel<MulOp> << <blocksPerGrid, threadsPerBlock >> > (1 / (1 - pow(beta2, timestep)), V_d, V_d, gv.shape.H, gv.shape.W, gv.shape.C);
+		DEFAULT_CUDA_DIMS_FROM_SHAPE(shape);
 
-	checkCuda(cudaFree(grad_d));
+		auto f1(static_cast<std::function<void(size_t, float*, float*)>>(
+			[&](size_t ind, float* M_d, float* grad) { M_d[ind] = beta1 * M_d[ind] + (1 - beta1) * grad[ind]; }
+		));
+		elemwiseOpKernel << <blocksPerGrid, threadsPerBlock >> > (shape.H, shape.W, shape.C, f1, M_d, grad_d);
 
-	float* X_d;
-	
-	checkCuda(cudaMalloc(&X_d, gv.shape.size));
+		auto f2(static_cast<std::function<void(size_t, float*, float*)>>(
+			[&](size_t ind, float* V_d, float* grad) { V_d[ind] = beta2 * V_d[ind] + (1 - beta2) * grad[ind] * grad[ind]; }
+		));
+		elemwiseOpKernel << <blocksPerGrid, threadsPerBlock >> > (shape.H, shape.W, shape.C, f2, V_d, grad_d);
 
-	checkCuda(cudaMemcpy(&X_d, gv.X, gv.shape.size, cudaMemcpyHostToDevice));
+		float* weight_d = grad_d;
 
-	adam_update_inner << <blocksPerGrid, threadsPerBlock >> > (X_d, M_d, V_d, lr, epsilon, gv.shape);
+		checkCuda(cudaMemcpy(weight_d, weight, shape.size, cudaMemcpyHostToDevice));
 
-	checkCuda(cudaMemcpy(gv.M.get(), M_d, gv.shape.size, cudaMemcpyDeviceToHost));
-	checkCuda(cudaMemcpy(gv.V.get(), V_d, gv.shape.size, cudaMemcpyDeviceToHost));
-	checkCuda(cudaMemcpy(gv.X, X_d, gv.shape.size, cudaMemcpyDeviceToHost));
+		auto f3(static_cast<std::function<void(size_t, float*, float*, float*)>>(
+			[&](size_t ind, float* M_d, float* V_d, float* W_d)
+			{
+				float beta1_t = std::powf(beta1, timestep);
+				float beta2_t = std::powf(beta2, timestep);
+				float M_hat_d = M_d[ind] / (1 - beta1_t);
+				float V_hat_d = V_d[ind] / (1 - beta2_t);
+				W_d[ind] -= (lr * M_hat_d) / (std::sqrtf(V_hat_d) + epsilon);
+			}
+		));
+		elemwiseOpKernel << <blocksPerGrid, threadsPerBlock >> > (shape.H, shape.W, shape.C, f3, M_d, V_d, weight_d);
 
-	checkCuda(cudaFree(M_d));
-	checkCuda(cudaFree(V_d));
-	checkCuda(cudaFree(X_d));
+		checkCuda(cudaMemcpy(weight->raw(), weight_d, shape.size, cudaMemcpyDeviceToHost));
+		checkCuda(cudaMemcpy(mvp.first.raw(), M_d, shape.size, cudaMemcpyDeviceToHost));
+		checkCuda(cudaMemcpy(mvp.second.raw(), V_d, shape.size, cudaMemcpyDeviceToHost));
+
+		checkCuda(cudaFree(weight_d));
+		checkCuda(cudaFree(M_d));
+		checkCuda(cudaFree(V_d));
+	}
 }
-

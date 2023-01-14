@@ -1,67 +1,75 @@
 #pragma once
 
-#include "../utils/shape.h"
+#include "../base/tensor.h"
 
 #include <memory>
 #include <vector>
 #include <unordered_set>
 
-class GV
-{
-public:
-	GV(float* X, float* G, const Shape& shape)
-		: X(X), G(G), M(std::make_unique<float[]>(shape.size)),
-		V(std::make_unique<float[]>(shape.size)), shape(shape)
-	{
-	};
-
-	float* X;
-	float* G;
-	std::unique_ptr<float[]> M;
-	std::unique_ptr<float[]> V;
-	Shape shape;
-};
+typedef std::pair<Tensor*, Tensor> WGPair;
 
 class Optimizer
 {
 public:
+
 	Optimizer(float lr) : lr(lr) {};
 	virtual ~Optimizer() = default;
 
-	virtual void add_gradient(float* X, float* G, const Shape& shape)
+	virtual void add_weight(Tensor* tensor)
 	{
-		gvs.emplace(GV(X, G, shape));
+		weights.push_back(std::make_pair(tensor, Tensor(tensor->get_shape(), Tensor::LayerType::Input)));
 	}
+
+	void set_batch_size(size_t batch_size)
+	{
+		this->batch_size = batch_size;
+	}
+
+	void update_grads();
+	void reset_grads()
+	{
+		for (auto& wgp : weights)
+		{
+			memset(wgp.second.raw(), 0, wgp.second.get_shape().size);
+		}
+	}
+
 	virtual void update() = 0;
 
 protected:
+
 	float lr;
-	std::unordered_set<GV> gvs;
+	size_t batch_size;
+	std::vector<WGPair> weights;
 };
 
 class Adam : Optimizer
 {
 public:
+
 	Adam(float lr = 0.001f, float beta1 = 0.9f, float beta2 = 0.999f, float epsilon = 1e-8)
 		: Optimizer(lr), beta1(beta1), beta2(beta2), epsilon(epsilon), timestep(0)
 	{
 	};
 
-	void update()
+	virtual void add_weight(Tensor* tensor)
 	{
-		for (const auto& gv : gvs)
-		{
-			cuda_adam_update(gv, beta1, beta2, epsilon, timestep, lr);
-		}
-		++timestep;
+		Optimizer::add_weight(tensor);
+		mv_pairs.push_back(std::make_pair(
+			Tensor(tensor->get_shape(), Tensor::LayerType::Input),
+			Tensor(tensor->get_shape(), Tensor::LayerType::Input)
+		));
 	}
 
+	void update();
+
 private:
+
 	float beta1;
 	float beta2;
 	float epsilon;
-	float timestep;
+	size_t timestep;
 
-	void cuda_adam_update(const GV& gv, float beta1, float beta2, float epsilon, float timestep, float lr);
+	std::vector<std::pair<Tensor, Tensor>> mv_pairs;
 };
 
