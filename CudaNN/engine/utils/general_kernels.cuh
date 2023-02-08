@@ -152,44 +152,46 @@ __global__ void vectMatAddKernel(T* V, T* B, T* dst, size_t H, size_t W, size_t 
 }
 
 template<typename T>
-__global__ void softmax1DKernel1024M(T* X, T* X_DEST, size_t C)
+__global__ void softmax1DKernel1024M(T* X, T* X_DEST, size_t n, size_t cols_per_thread, size_t threads_per_group)
 {
-	__shared__ float _V[C / warpSize];
+
+	assert(n <= 1024);
+	assert(threads_per_group <= kWarpSize && kWarpSize % threads_per_group == 0);
 
 	auto tx = threadIdx.x;
-	auto bx = blockIdx.x;
-	auto idx = blockDim.x * bx + tx;
+	auto idx = tx * cols_per_thread;
 
-	auto warp_id = tx / warpSize;
-	auto lane_id = tx % warpSize;
+	float x_max = -std::numeric_limits<float>::infinity();
 
-	float x = idx < C ? X[idx] : -std::numeric_limits<float>::infinity();
-	float x_max = WarpAllReduce<MaxOp>(x);
-	if (!lane_id)
+	for (size_t i = 0; i < cols_per_thread; ++i)
 	{
-		_V[warp_id] = x_max;
+		if (idx + i < n)
+		{
+			x_max = min(x_max, X[idx + i]);
+		}
 	}
 
-	__syncthreads();
+	x_max = WarpAllReduce<MaxOp>(x_max, threads_per_group);
 
-	x_max = lane_id < (C / warpSize) ? _V[lane_id] : -std::numeric_limits<float>::infinity();
-	x_max = WarpAllReduce<MaxOp>(x_max);
+	float x_sum = 0.0;
 
-	x = idx < C ? expf(x - x_max) : 0;
-	float x_sum = WarpAllReduce<SumOp>(x);
-	if (!lane_id)
+	for (size_t i = 0; i < cols_per_thread; ++i)
 	{
-		_V[warp_id] = x_sum;
+		if (idx + i < n)
+		{
+			X_DEST[idx + i] = expf(X[idx + i] - x_max);
+			x_sum += X_DEST[idx + i];
+		}
 	}
 
-	__syncthreads();
+	x_sum = WarpAllReduce<SumOp>(x_sum, threads_per_group);
 
-	x_sum = lane_id < (C / warpSize) ? _V[lane_id] : 0;
-	x_sum = WarpAllReduce<SumOp>(x_sum);
-
-	if (idx < C)
+	for (size_t i = 0; i < cols_per_thread; ++i)
 	{
-		X_DEST[idx] = x / x_sum;
+		if (idx + i < n)
+		{
+			X_DEST[idx + i] /= x_sum;
+		}
 	}
 }
 

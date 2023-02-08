@@ -27,13 +27,7 @@
     <ClInclude Include="engine\layers\dense\dense.cu">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="engine\activations\activations.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="engine\utils\cuda_utils.cuh">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="engine\activations\activations.cuh">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="engine\optimizers\optimizers.h">
@@ -88,6 +82,12 @@
     <ClInclude Include="engine\ops\softmax\softmax.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="gtest\gtest.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="tests\ops\softmax_test.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="engine\optimizers\optimizers.cu" />
@@ -97,5 +97,10 @@
     <CudaCompile Include="engine\ops\crossentropy\crossentropy.cu" />
     <CudaCompile Include="engine\ops\relu\relu.cu" />
     <CudaCompile Include="engine\ops\softmax\softmax.cu" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="gtest\gtest-all.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

@@ -7,6 +7,8 @@
 #include <cuda_runtime.h>   // For cuda types
 #include <type_traits>
 
+constexpr auto kWarpSize = 32;
+
 constexpr auto TILE_WIDTH = 32;
 constexpr auto BLOCK_SIZE = 8;
 
@@ -81,8 +83,8 @@ struct SumOp
 };
 
 template<template<typename> typename ReductionOp, typename T>
-__inline__ __device__ T WarpAllReduce(T val, uint32_t mask = 0xffffffff) {
-	for (int laneMask = warpSize / 2; laneMask > 0; laneMask /= 2) {
+__inline__ __device__ T WarpAllReduce(T val, uint32_t laneWidth = kWarpSize, uint32_t mask = 0xffffffff) {
+	for (int laneMask = laneWidth / 2; laneMask > 0; laneMask /= 2) {
 		val = ReductionOp<T>()(val, __shfl_xor_sync(mask, val, laneMask));
 	}
 	return val;

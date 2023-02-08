@@ -7,23 +7,14 @@ class GenTensor
 {
 public:
 
-	enum class InitMethod
-	{
-		Zero,
-		GlorotNormal,
-		GlorotUniform,
-		HeNormal,
-		HeUniform
-	};
-
-	GenTensor(const Shape& shape, InitMethod im)
+	GenTensor(const Shape& shape)
 		: tensor(shape, Tensor::LayerType::Weight)
 	{
 		ZeroInitializer zi;
 		tensor.initialize(zi);
 	};
 
-	GenTensor(const Shape& shape, InitMethod im, Initializer& init)
+	GenTensor(const Shape& shape, Initializer& init)
 		: tensor(shape, Tensor::LayerType::Weight)
 	{
 		tensor.initialize(init);

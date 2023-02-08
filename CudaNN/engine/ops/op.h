@@ -20,6 +20,8 @@ public:
 
 protected:
 
+	Op() = default;
+
 	void handle_input_history(History& other)
 	{
 		if (h != other)
@@ -59,20 +61,5 @@ protected:
 		h.add_op(this);
 	}
 
-	//template<typename... T, typename = typename std::enable_if<
-	//	(true && ... && std::is_same_v<T, Tensor*>), void>::type >
-	//	void handle_outputs(T... outputs)
-	//{
-	//	Tensor* output_arr[] = { outputs... };
-	//	for (size_t i = 0; i < sizeof...(outputs); ++i)
-	//	{
-	//		Tensor* output = output_arr[i];
-	//		// I *think* this is a reasonable assumption?
-	//		in_grads.insert(std::make_pair<Tensor*, CudaGradient>(output, CudaGradient(output->shape)));
-	//	}
-	//}
-
-	//std::vector<CudaGradientHandler> out_grads; // Will be stored in correspondence with the inputs
-	//std::unordered_map<Tensor*, CudaGradient> in_grads;
 	History h;
 };

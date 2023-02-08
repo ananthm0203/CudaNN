@@ -15,7 +15,7 @@ public:
 		return &out;
 	}
 
-	void forwards();
+	void forward();
 	void backwards();
 
 private:

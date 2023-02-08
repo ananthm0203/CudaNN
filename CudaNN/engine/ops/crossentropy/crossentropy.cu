@@ -7,14 +7,14 @@ static constexpr float EPS = 1e-16f;
 
 static __device__ void _crossentropy_inner(float* y_true, float* y_pred, float* ce_target, size_t n)
 {
-	__shared__ float _V[n / warpSize];
+	__shared__ float _V[n / kWarpSize];
 
 	auto tx = threadIdx.x;
 	auto bx = blockIdx.x;
 	auto idx = blockDim.x * bx + tx;
 
-	auto warp_id = tx / warpSize;
-	auto lane_id = tx % warpSize;
+	auto warp_id = tx / kWarpSize;
+	auto lane_id = tx % kWarpSize;
 
 	float ce = tx < n ? y_true[tx] * log2f(y_pred[tx] + EPS) : 0.0f;
 	ce = WarpAllReduce<SumOp>(ce);
@@ -24,7 +24,7 @@ static __device__ void _crossentropy_inner(float* y_true, float* y_pred, float* 
 		_V[warp_id] = ce;
 	}
 
-	ce = lane_id < (n / warpSize) ? _V[lane_id] : 0;
+	ce = lane_id < (n / kWarpSize) ? _V[lane_id] : 0;
 	ce = WarpAllReduce<SumOp>(ce);
 
 	if (idx == 0)

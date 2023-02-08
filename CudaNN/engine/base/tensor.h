@@ -122,6 +122,7 @@ public:
 
 	float* raw() { return X.get(); }
 	void copy_to(float* buf) { memcpy(buf, X.get(), shape.size); }
+	void copy_from(float* buf) { memcpy(X.get(), buf, shape.size); }
 
 	Op* from() { return _from; }
 	void set_from(Op* op) { _from = op; }
