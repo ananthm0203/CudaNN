@@ -82,7 +82,7 @@
     <ClInclude Include="engine\ops\softmax\softmax.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="gtest\gtest.h">
+    <ClInclude Include="tests\gtest\gtest.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="tests\ops\softmax_test.h">
@@ -99,7 +99,7 @@
     <CudaCompile Include="engine\ops\softmax\softmax.cu" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="gtest\gtest-all.cc">
+    <ClCompile Include="tests\gtest\gtest-all.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

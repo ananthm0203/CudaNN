@@ -163,7 +163,7 @@
     <ClInclude Include="engine\vars\gen_tensor.h" />
     <ClInclude Include="engine\vars\initializers\initializers.h" />
     <ClInclude Include="engine\vars\input.h" />
-    <ClInclude Include="gtest\gtest.h" />
+    <ClInclude Include="tests\gtest\gtest.h" />
     <ClInclude Include="tests\ops\softmax_test.h" />
   </ItemGroup>
   <ItemGroup>
@@ -176,7 +176,7 @@
     <CudaCompile Include="engine\optimizers\optimizers.cu" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="gtest\gtest-all.cc" />
+    <ClCompile Include="tests\gtest\gtest-all.cc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

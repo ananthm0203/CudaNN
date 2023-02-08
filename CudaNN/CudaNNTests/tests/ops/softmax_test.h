@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../../engine/ops/softmax/softmax.h"
-#include "../../engine/vars/input.h"
+#include "../../../engine/ops/softmax/softmax.h"
+#include "../..//../engine/vars/input.h"
 #include "../../gtest/gtest.h"
 
 #include <iostream>
@@ -21,8 +21,6 @@ namespace
 			auto& raw_in_0 = raw_ins[0];
 			auto& target_0 = targets[0];
 			auto& grads_0 = grads[0];
-
-			double sum = 0;
 
 			constexpr size_t num_elems = 100;
 
